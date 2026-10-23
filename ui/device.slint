@@ -1,0 +1,126 @@
+import { Icons } from "theme.slint";
+
+export enum DeviceType {
+	other,
+	hdd,
+	ssd,
+	optic,
+	flash,
+	floppy,
+	tape,
+}
+
+export enum DeviceFormat {
+	other,
+	cd-rom,
+	cd-r,
+	cd-rw,
+	dvd-rom,
+	dvd-r,
+	dvd-rw,
+	dvd-pr,
+	dvd-prw,
+	hd-dvd,
+	bd-rom,
+	bd-r,
+	bd-re,
+	bd-r-dual,
+	bd-re-dual,
+	vcd,
+	floppy-8,
+	floppy-525,
+	floppy-35,
+	zip-100,
+	zip-250,
+	zip-750,
+}
+
+export enum DeviceTransport {
+	other,
+	st506,
+	esdi,
+	ide,
+	sata,
+	scsi,
+	sas,
+	nvme,
+	usb,
+	sd,
+}
+
+export enum FileSystem {
+	other,
+	udf,
+	fat32,
+	exfat,
+	btrfs,
+	ntfs,
+	bitlocker,
+}
+
+export enum OperatingSystem {
+	no,
+	linux,
+	macos,
+	freebsd,
+	windows7,
+	windows8,
+	windows10,
+	windows11,
+	other,
+}
+
+export struct Device {
+	id: string,
+	type: DeviceType,
+	format: DeviceFormat,
+	transport: DeviceTransport,
+	label: string,
+	size: int,
+	used: int,
+	available: int,
+	vendor: string,
+	model: string,
+	fs: FileSystem,
+	os: OperatingSystem,
+	mounted: bool,
+	mount-point: string,
+}
+
+export global Logic {
+	public pure function getIcon(device: Device) -> string {
+		if device.os == OperatingSystem.linux     { return Icons.os-linux; }
+		if device.os == OperatingSystem.macos     { return Icons.os-macos; }
+		if device.os == OperatingSystem.freebsd   { return Icons.os-freebsd; }
+		if device.os == OperatingSystem.windows7  { return Icons.os-windows-classic; }
+		if device.os == OperatingSystem.windows8  { return Icons.os-windows; }
+		if device.os == OperatingSystem.windows10 { return Icons.os-windows; }
+		if device.os == OperatingSystem.windows11 { return Icons.os-windows; }
+
+		if device.type == DeviceType.hdd   { return Icons.dev-harddisk; }
+		if device.type == DeviceType.ssd   { return Icons.dev-harddisk; }
+		if device.type == DeviceType.optic { return Icons.dev-optic; }
+
+		if device.type == DeviceType.flash {
+			if device.transport == DeviceTransport.usb { return Icons.dev-flash; }
+			if device.transport == DeviceTransport.sd  { return Icons.dev-sd; }
+
+			return Icons.dev-flash;
+		}
+
+		if device.type == DeviceType.floppy {
+			if device.format == DeviceFormat.floppy-8   { return Icons.dev-floppy525; }
+			if device.format == DeviceFormat.floppy-525 { return Icons.dev-floppy525; }
+			if device.format == DeviceFormat.floppy-35  { return Icons.dev-floppy35; }
+			if device.format == DeviceFormat.zip-100    { return Icons.dev-zip; }
+			if device.format == DeviceFormat.zip-250    { return Icons.dev-zip; }
+			if device.format == DeviceFormat.zip-750    { return Icons.dev-zip; }
+
+			return Icons.dev-floppy35;
+		}
+
+		if device.type == DeviceType.tape { return Icons.dev-tape; }
+
+		return Icons.device;
+	}
+}

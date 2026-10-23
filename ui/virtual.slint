@@ -1,0 +1,17 @@
+import { Icons } from "theme.slint";
+
+export enum VitrualDeviceType {
+	other,
+	optic,
+}
+
+export struct VirtualDevice {
+	type: VitrualDeviceType,
+}
+
+export global Logic {
+	public pure function getIcon(device: VirtualDevice) -> string {
+		if device.type == VitrualDeviceType.optic { return Icons.dev-optic; }
+		return Icons.virtual;
+	}
+}

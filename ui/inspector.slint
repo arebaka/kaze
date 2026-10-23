@@ -1,0 +1,245 @@
+
+
+import { Icon, String } from "common.slint";
+component Preview inherits Rectangle {
+	in property <image> image;
+
+	height: 512px;
+
+	Image {
+		height: 100%;
+		source: image;
+	   	image-fit: cover;
+	}
+}
+// @image-url("/home/arelive/photo_2026-04-18_07-24-26.jpg")
+component PreviewPalette inherits Rectangle {
+	in property <[brush]> colors;
+
+	height: Sizing.height-base;
+
+    HorizontalLayout {
+        padding-left: Sizing.padding;
+        padding-right: Sizing.padding;
+
+        for color in colors : Rectangle {
+       		background: color;
+         	horizontal-stretch: 1;
+        }
+    }
+}
+
+export component Action inherits Rectangle {
+	in property <string> icon: "";
+	in property <string> label: "";
+	out property <bool> hover <=> ta.has-hover;
+
+	background: hover ? Palette.background-accent : transparent;
+	border-color: Palette.border-base;
+	border-width: Sizing.border-width;
+	border-radius: Sizing.rad;
+
+	ta := TouchArea { mouse-cursor: default; }
+	HorizontalLayout {
+		padding-left: Sizing.padding;
+		padding-right: Sizing.padding;
+		spacing: Sizing.spacing;
+		alignment: center;
+
+		if icon != "" : i := Icon { text: icon; }
+		s := String { text: label; }
+	}
+}
+
+component Actions inherits Rectangle {
+	height: Sizing.height-base;
+
+	HorizontalLayout {
+		padding-left: Sizing.padding;
+     	padding-right: Sizing.padding;
+     	spacing: Sizing.spacing;
+
+     	Action { icon: "󰛐"; label: "View"; }
+     	Action { icon: "󰴒"; label: "Edit"; }
+     	Action { icon: "󰆏"; label: "Copy"; }
+     	Action { icon: "󱀱"; label: "Move"; }
+     	Action { icon: "󰧧"; label: "Delete"; }
+	}
+}
+
+component FileName inherits Rectangle {
+	height: Sizing.height-base;
+
+	HorizontalLayout {
+		padding-left: Sizing.padding-double;
+		padding-right: Sizing.padding-double;
+
+		ti := TextInput {
+			font-family: Typography.font-base;
+			font-size: Typography.size-base;
+			font-weight: Typography.weight-bold;
+			color: Palette.foreground-accent;
+			selection-foreground-color: Palette.foreground-select;
+			selection-background-color: Palette.background-select;
+			text-cursor-width: Typography.width-cursor;
+			text: "photo_2026-04-18_07-24-26.jpg";
+			vertical-alignment: center;
+			input-type: text;
+			read-only: true;
+		}
+		IconButton { icon: "󰏫"; }
+	}
+}
+
+component FilePath inherits Rectangle {
+	height: Sizing.height-base;
+
+	HorizontalLayout {
+		padding-left: Sizing.padding-double;
+		padding-right: Sizing.padding-double;
+
+    	String { text: "/home/arelive/photo_2026-04-18_07-24-26.jpg"; }
+		IconButton { icon: "󰆏"; }
+	}
+}
+
+component Meta inherits Rectangle {
+	VerticalLayout {
+		padding-left: Sizing.padding;
+		padding-right: Sizing.padding;
+
+		@children
+	}
+}
+
+component Openers inherits Rectangle {
+	height: Sizing.height-base;
+
+	HorizontalLayout {
+		padding-left: Sizing.padding;
+		padding-right: Sizing.padding;
+		spacing: Sizing.spacing;
+
+		OpenerIcon { icon: @image-url("https://upload.wikimedia.org/wikipedia/commons/4/45/The_GIMP_icon_-_gnome.svg?download"); }
+		OpenerIcon { icon: @image-url("https://upload.wikimedia.org/wikipedia/commons/6/62/Pinta_icon.png?download"); }
+		OpenerIcon { icon: @image-url("https://upload.wikimedia.org/wikipedia/commons/7/73/Calligrakrita-base.svg?download"); }
+		OpenerIcon { icon: @image-url("https://upload.wikimedia.org/wikipedia/commons/a/a0/Firefox_logo%2C_2019.svg?download"); }
+		OpenerIcon { icon: @image-url("https://upload.wikimedia.org/wikipedia/commons/e/e1/Google_Chrome_icon_%28February_2022%29.svg?download"); }
+		Rectangle { horizontal-stretch: 1; }
+		Action {
+			label: "Open with...";
+			border-width: 0;
+	 	}
+	}
+}
+
+component Inspector inherits Rectangle {
+	width: 610px;
+	background: Palette.background-surface;
+
+	ScrollView {
+		mouse-drag-pan-enabled: true;
+
+		VerticalLayout {
+			spacing: Sizing.spacing;
+
+			Preview {}
+			PreviewPalette {}
+			Actions {}
+			Openers {}
+			VerticalLayout {
+				FileName {}
+				FilePath {}
+				Meta {
+					MetaSection {
+						heading: "General";
+
+						MetaRow { key: "MIME"; value: "image/jpeg"; }
+						MetaRow { key: "Size"; value: "186.0 K"; }
+						MetaRow { key: "Raw size"; value: "190459"; }
+						MetaRow { key: "Blocks"; value: "276"; }
+						MetaRow { key: "Hard links"; value: "1"; }
+					}
+					MetaSection {
+						heading: "Dates";
+
+						MetaRow { key: "Created"; value: "21.04.2026 10:06:42"; }
+						MetaRow { key: "Modified"; value: "21.04.2026 10:06:42"; }
+						MetaRow { key: "Accessed"; value: "21.04.2026 10:06:43"; }
+						MetaRow { key: "Indexed"; value: "Never"; }
+					}
+					MetaSection {
+						heading: "Access";
+
+						MetaRow { key: "Permissions"; value: "-rw-r--r-- (0644)"; }
+						MetaRow { key: "Owner"; value: "arelive (1000)"; }
+						MetaRow { key: "Group"; value: "arelive (1000)"; }
+						MetaRow { key: "Inode"; value: "27135258"; }
+					}
+					MetaSection {
+						heading: "Image";
+
+						MetaRow { key: "Width"; value: "1280"; }
+						MetaRow { key: "Height"; value: "960"; }
+						MetaRow { key: "Megapixels"; value: "1.2"; }
+					}
+					MetaSection {
+						heading: "Encoding";
+
+						MetaRow { key: "Process"; value: "Progressive DCT, Huffman coding"; }
+						MetaRow { key: "Bits per sample"; value: "8"; }
+						MetaRow { key: "Color components"; value: "3"; }
+						MetaRow { key: "YCbCrSubSampling"; value: "YCbCr4:2:0 (2 2)"; }
+					}
+					MetaSection {
+						heading: "JFIF";
+
+						MetaRow { key: "JFIF Version"; value: "1.01"; }
+						MetaRow { key: "Resolution unit"; value: "inches"; }
+						MetaRow { key: "X resolution"; value: "72"; }
+						MetaRow { key: "Y resolution"; value: "72"; }
+					}
+					MetaSection {
+						heading: "ICC header";
+
+						MetaRow { key: "Profile CMM type"; value: ""; }
+						MetaRow { key: "Profile version"; value: "4.3.0"; }
+						MetaRow { key: "Profile class"; value: "Display Device Profile"; }
+						MetaRow { key: "Color space data"; value: "RGB"; }
+						MetaRow { key: "Profile connection space"; value: "XYZ"; }
+						MetaRow { key: "Profile date time"; value: "2016:01:01 00:00:00"; }
+						MetaRow { key: "Profile file signature"; value: "acsp"; }
+						MetaRow { key: "Primary platform"; value: "Unknown ()"; }
+						MetaRow { key: "CMM flags"; value: "Not Embedded, Independent"; }
+						MetaRow { key: "Device manufacturer"; value: ""; }
+						MetaRow { key: "Device model"; value: ""; }
+						MetaRow { key: "Device attributes"; value: "Reflective, Glossy, Positive, Color"; }
+						MetaRow { key: "Rendering intent"; value: "Media-Relative Colorimetric"; }
+						MetaRow { key: "Connection space illuminant"; value: "0.9642 1 0.82491"; }
+						MetaRow { key: "Profile creator"; value: ""; }
+						MetaRow { key: "Profile ID"; value: "0"; }
+					}
+					MetaSection {
+						heading: "ICC profile";
+
+						MetaRow { key: "Profile description"; value: "sRGB"; }
+						MetaRow { key: "Red matrix column"; value: "0.43607 0.22249 0.01392"; }
+						MetaRow { key: "Green matrix column"; value: "0.38515 0.71687 0.09708"; }
+						MetaRow { key: "Blue matrix column"; value: "0.14307 0.06061 0.7141"; }
+						MetaRow { key: "Media white point"; value: "0.9642 1 0.82491"; }
+						MetaRow { key: "Profile copyright"; value: "Google Inc. 2016"; }
+					}
+					MetaSection {
+						heading: "Checksums";
+
+	         			MetaRow { key: "MD5"; value: "02c1ce11e019df22d4c7fc8dcc94dba1"; }
+	         			MetaRow { key: "SHA-1"; value: "d95cc7c5e673bd0abf74397f3405b2e84bd4d036"; }
+	         			MetaRow { key: "SHA-256"; value: "f341c75da9f83f82b88db5cbadaee7aa6285009b4821dfbc88bdb64de7d3a90d"; }
+	         			MetaRow { key: "CRC32"; value: "74C5C67C"; }
+					}
+				}
+           	}
+            Rectangle { height: Sizing.height-base; }
+		}
+	}
+}

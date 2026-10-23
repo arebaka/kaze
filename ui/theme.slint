@@ -1,0 +1,151 @@
+export global Palette {
+	out property <string> name: "dark";
+
+	out property <brush> palette-00: oklch(68%, 0.102, 10);
+	out property <brush> palette-01: oklch(68%, 0.102, 40);
+	out property <brush> palette-02: oklch(68%, 0.102, 70);
+	out property <brush> palette-03: oklch(68%, 0.102, 100);
+	out property <brush> palette-04: oklch(68%, 0.102, 130);
+	out property <brush> palette-05: oklch(68%, 0.102, 160);
+	out property <brush> palette-06: oklch(68%, 0.102, 190);
+	out property <brush> palette-07: oklch(68%, 0.102, 220);
+	out property <brush> palette-08: oklch(68%, 0.102, 250);
+	out property <brush> palette-09: oklch(68%, 0.102, 280);
+	out property <brush> palette-10: oklch(68%, 0.102, 310);
+	out property <brush> palette-11: oklch(68%, 0.102, 340);
+
+    out property <brush> background-base: oklch(12%, 0.002, 100);
+    out property <brush> background-surface: oklch(18%, 0.002, 100);
+    out property <brush> background-accent: oklch(24%, 0.002, 100);
+    out property <brush> background-muted: transparent;
+    out property <brush> background-select: palette-07;
+    out property <brush> foreground-base: oklch(64%, 0.002, 280);
+    out property <brush> foreground-surface: foreground-base;
+    out property <brush> foreground-accent: oklch(94%, 0.002, 280);
+    out property <brush> foreground-muted: oklch(40%, 0.002, 280);
+    out property <brush> foreground-select: background-base;
+
+    out property <brush> border-base: oklch(40%, 0.002, 280);
+    out property <brush> border-accent: oklch(64%, 0.002, 280);
+
+    out property <brush> success: palette-04;
+    out property <brush> warning: palette-02;
+    out property <brush> error: palette-00;
+    out property <brush> danger: palette-00;
+}
+
+export global Sizing {
+    out property <length> padding: 8px;
+    out property <length> spacing: 8px;
+    out property <length> height-base: 32px;
+    out property <length> height-small: 18px;
+    out property <length> border-width: 1px;
+    out property <length> rad: 8px;
+}
+
+export global Typography {
+	out property <string> font-base: "Geist";
+	out property <string> font-mono: "JetBrainsMono Nerd Font";
+	out property <string> font-icon: "JetBrainsMono Nerd Font";
+	out property <length> size-base: 14px;
+	out property <length> size-small: 12px;
+	out property <length> size-large: 18px;
+	out property <length> size-icon: 18px;
+	out property <int> weight-base: 400;
+	out property <int> weight-bold: 700;
+	out property <length> spacing-icon: 6px;
+	out property <length> width-cursor: 2px;
+}
+
+export global Icons {
+	out property <string> menu: "󰍜";
+	out property <string> palette: "󱐋";
+	out property <string> add: "󰐕";
+	out property <string> close: "󰅖";
+	out property <string> back: "󰅁";
+	out property <string> forward: "󰅂";
+	out property <string> up: "󰁝";
+	out property <string> copy: "󰆏";
+	out property <string> paste: "󰆒";
+	out property <string> filter: "󰈲";
+	out property <string> group: "󰋃";
+	out property <string> sort: "󰒺";
+	out property <string> overview: "󰕮";
+	out property <string> recent: "󰔟";
+	out property <string> trash: "󰩹";
+	out property <string> device: "󰋊";
+	out property <string> node: "󰛳";
+	out property <string> cloud: "󰅟";
+	out property <string> virtual: "󰜦";
+	out property <string> file: "󰈔";
+	out property <string> directory: "󰉋";
+	out property <string> pipe: "󰟥";
+	out property <string> block: "󰆦";
+	out property <string> character: "󰦪";
+	out property <string> socket: "󰐧";
+	out property <string> archive: "󰀼";
+	out property <string> application: "󰣆";
+	out property <string> view-list: "󰕱";
+	out property <string> view-grid: "󱇙";
+	out property <string> view-gallery: "󱢉";
+	out property <string> view-tree: "󰙅";
+	out property <string> view-radial: "󰄦";
+	out property <string> view-split: "󰭣";
+	out property <string> sort-dummy: "󰒺";
+	out property <string> sort-acs: "󰒼";
+	out property <string> sort-desc: "󰒽";
+	out property <string> sort-alpha: "󰒻";
+	out property <string> sort-alpha-asc: "󰖽";
+	out property <string> sort-alpha-desc: "󰖿";
+	out property <string> sort-number: "󰒾";
+	out property <string> sort-number-asc: "󱎉";
+	out property <string> sort-number-desc: "󱎊";
+	out property <string> sort-status-asc: "󱎅";
+	out property <string> sort-status-desc: "󱎇";
+	out property <string> sort-date-asc: "󱕇";
+	out property <string> sort-date-desc: "󱕈";
+	out property <string> sort-time-asc: "󱕉";
+	out property <string> sort-time-desc: "󱕋";
+	out property <string> dir-special: "󰚝";
+	out property <string> dir-home: "󱂵"; // 󰛫
+	out property <string> dir-desktop: "󰇄";
+	out property <string> dir-download: "󰉍";
+	out property <string> dir-document: "󱧶";
+	out property <string> dir-image: "󰉏";
+	out property <string> dir-music: "󱍙";
+	out property <string> dir-video: "󱧺";
+	out property <string> dir-public: "󰉌"; // 󰉑 󱧬 󱧱 󱧰 󱧮 󱧪 󱧨 󱧼 󰉙
+	out property <string> dir-template: "󰣞";
+	out property <string> dir-config: "󱁿";
+	out property <string> dir-cache: "󰴋";
+	out property <string> dir-secret: "󰢬";
+	out property <string> dir-system: "󰷌";
+	out property <string> dir-temporary: "󰪺";
+	out property <string> dir-forbidden: "󰉐";
+	out property <string> dir-readonly: "󰉑";
+	out property <string> os-linux: "󰌽";
+	out property <string> os-macos: "󰀵";
+	out property <string> os-freebsd: "󰣠";
+	out property <string> os-windows: "󰖳";
+	out property <string> os-windows-classic: "󰨡";
+	out property <string> dev-harddisk: "󰋊";
+	out property <string> dev-optic: "󰗮";
+	out property <string> dev-flash: "󱊞";
+	out property <string> dev-sd: "󰑹";
+	out property <string> dev-floppy35: "󰉉";
+	out property <string> dev-floppy525: "󰧯";
+	out property <string> dev-zip: "󰨣";
+	out property <string> dev-tape: "󱛟";
+	out property <string> node-laptop: "󰌢";
+	out property <string> node-workstation: "󰪫";
+	out property <string> node-phone: "󰄜";
+	out property <string> node-tablet: "󰓶";
+	out property <string> node-watch: "󰖉";
+	out property <string> node-nas: "󰣳";
+	out property <string> node-switch: "󰟡";
+	out property <string> node-playstation: "󰐔";
+	out property <string> cl-google-drive: "󰊶";
+	out property <string> cl-icloud: "󰀸";
+	out property <string> cl-yandex-disk: "";
+	out property <string> cl-s3: "";
+}

@@ -1,0 +1,36 @@
+import { ViewType } from "view.slint";
+import { Location } from "location.slint";
+import { Entry } from "file.slint";
+
+export struct TabData {
+	meta: TabMeta,
+	history: [Location],
+	history-index: int,
+	breadcrumbs: [Location],
+	breadcrumb-index: int,
+	search-placeholder: string,
+	search-query: string,
+	entries: [Entry],
+	active-entry-index: int,
+	scroll-position: length,
+	// sidebar:
+	//   headline: string
+	//   subhead: string
+	//   sections:
+	//     heading
+	//     items:
+	//       name: string
+	//       icon: string
+	//       badge:
+	//         type: counter, percent, label, online
+	//         number: int
+	//         label: string
+	//         status: bool
+	//     active-item: int
+	//   active-section: int
+	//   summary:
+	//     point: string
+	//     fill: percent
+	//     percent: string
+	//     size: string
+}

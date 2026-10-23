@@ -1,0 +1,213 @@
+import { Palette, Icons } from "theme.slint";
+import { Directory, Logic as DirectoryLogic } from "directory.slint";
+
+export enum FileType {
+	other,
+	regular,
+	directory,
+	pipe,
+	block,
+	character,
+	socket,
+	archive,
+}
+
+export enum FileKind {
+	other,
+	text,
+	image,
+	image-project,
+	vector,
+	vector-project,
+	video,
+	video-project,
+	audio,
+	audio-project,
+	model,
+	model-project,
+	document,
+	spreadsheet,
+	presentation,
+	application,
+	archive,
+	backup,
+	code,
+	data,
+	config,
+	script,
+	log,
+	database,
+	secret,
+	layout,
+	style,
+	font,
+	uri,
+	torrent,
+}
+
+export enum FileFormat {
+	other,
+	// text
+	plain,
+	// image
+	gif,
+	bmp,
+	xbm,
+	png,
+	tiff,
+	avif,
+	tga,
+	sgi,
+	jpeg,
+	webp,
+	// image project
+	photoshop,
+	gimp,
+	// vector
+	svg,
+	cur,
+	ani,
+	wmf,
+	emf,
+	dia,
+	dxf,
+	// vector project
+	illustrator,
+	inkscape,
+	draw,
+}
+
+export struct File {
+	name: string,
+	path: string,
+	type: FileType,
+	link: bool,
+	readable: bool,
+	writable: bool,
+	executable: bool,
+	owner: string,
+	owner-id: int,
+	group: string,
+	group-id: int,
+	permissions: int,
+	inode: int,
+	hard-links: int,
+	size: int,
+	created_lo: int,
+	created_hi: int,
+	modified_lo: int,
+	modified_hi: int,
+	accessed_lo: int,
+	accessed_hi: int,
+	hidden: bool,
+	kind: FileKind,
+	format: FileFormat,
+	directory: Directory,
+}
+
+export struct Entry {
+	file: File,
+	size: string,
+	created: string,
+	modified: string,
+	accessed: string,
+}
+
+export global Logic {
+	public pure function getIcon(file: File) -> string {
+		if file.type == FileType.pipe      { return Icons.pipe; }
+		if file.type == FileType.block     { return Icons.block; }
+		if file.type == FileType.character { return Icons.character; }
+		if file.type == FileType.socket    { return Icons.socket; }
+		if file.type == FileType.directory { return DirectoryLogic.getIcon(file.directory, file.readable, file.writable); }
+
+		// if file.type == Type.regular || file.executable {
+			// return Palette.foreground-accent;
+		// }
+
+		if file.type == FileType.archive {
+			return Icons.archive;
+		}
+
+		if file.executable { return Icons.application; }
+
+		return Icons.file;
+	}
+
+	public pure function getIconBrush(file: File) -> brush {
+		if file.type == FileType.pipe      { return Palette.palette-06; }
+		if file.type == FileType.block     { return Palette.palette-00; }
+		if file.type == FileType.character { return Palette.palette-10; }
+		if file.type == FileType.socket    { return Palette.palette-08; }
+
+		if file.kind == FileKind.text           { return Palette.foreground-base; }
+		if file.kind == FileKind.image          { return Palette.palette-00; }
+		if file.kind == FileKind.image-project  { return Palette.palette-00; }
+		if file.kind == FileKind.vector         { return Palette.palette-11; }
+		if file.kind == FileKind.vector-project { return Palette.palette-11; }
+		if file.kind == FileKind.video          { return Palette.palette-06; }
+		if file.kind == FileKind.video-project  { return Palette.palette-06; }
+		if file.kind == FileKind.audio          { return Palette.palette-10; }
+		if file.kind == FileKind.audio-project  { return Palette.palette-10; }
+		if file.kind == FileKind.model          { return Palette.palette-05; }
+		if file.kind == FileKind.model-project  { return Palette.palette-05; }
+
+		// document,
+		// spreadsheet,
+		// presentation,
+		// application,
+		// archive,
+		// backup,
+		// code,
+		// data,
+		// config,
+		// script,
+		// log,
+		// database,
+		// secret,
+		// layout,
+		// style,
+		// font,
+		// uri,
+		// torrent,
+
+		// if file.kind == FileKind.document { return Palette.palette-00; }
+		// if file.kind == FileKind.spreadsheet { return Palette.palette-00; }
+		// if file.kind == FileKind.presentation { return Palette.palette-00; }
+		// if file.kind == FileKind.application { return Palette.palette-00; }
+		// if file.kind == FileKind.archive { return Palette.palette-00; }
+		// if file.kind == FileKind.backup { return Palette.palette-00; }
+		// if file.kind == FileKind.code { return Palette.palette-00; }
+		// if file.kind == FileKind.data { return Palette.palette-00; }
+		// if file.kind == FileKind.config { return Palette.palette-00; }
+		// if file.kind == FileKind.script { return Palette.palette-00; }
+		// if file.kind == FileKind.log { return Palette.palette-00; }
+		// if file.kind == FileKind.database { return Palette.palette-00; }
+		// if file.kind == FileKind.secret { return Palette.palette-00; }
+		// if file.kind == FileKind.layout { return Palette.palette-00; }
+		// if file.kind == FileKind.style { return Palette.palette-00; }
+		// if file.kind == FileKind.font { return Palette.palette-00; }
+		// if file.kind == FileKind.uri { return Palette.palette-00; }
+		// if file.kind == FileKind.torrent { return Palette.palette-00; }
+
+		if file.type == FileType.directory { return Palette.foreground-base; }
+		if file.executable                 { return Palette.palette-04; }
+		if file.type == FileType.archive   { return Palette.palette-02; }
+
+		return Palette.foreground-base;
+	}
+
+	public pure function getBrush(file: File) -> brush {
+		if file.type == FileType.pipe      { return Palette.palette-06; }
+		if file.type == FileType.block     { return Palette.palette-00; }
+		if file.type == FileType.character { return Palette.palette-10; }
+		if file.type == FileType.socket    { return Palette.palette-08; }
+		if file.type == FileType.directory { return Palette.foreground-accent; }
+		if file.executable                 { return Palette.palette-04; }
+		if file.type == FileType.archive   { return Palette.palette-02; }
+		if file.hidden                     { return Palette.foreground-base; }
+		if file.type == FileType.regular   { return Palette.foreground-accent; }
+
+		return Palette.foreground-accent;
+	}
+}

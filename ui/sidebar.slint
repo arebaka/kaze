@@ -1,0 +1,261 @@
+import { ScrollView } from "std-widgets.slint";
+import { Palette, Sizing, Typography } from "theme.slint";
+import { IconedItem, String, Divider } from "common.slint";
+import { Location, LocationType, Logic } from "location.slint";
+
+export enum BadgeType {
+	no,
+	counter,
+	percent,
+	type,
+}
+
+struct Badge {
+	type: BadgeType,
+	number: int,
+	string: string,
+}
+
+struct ItemData {
+	location: Location,
+	badge: Badge,
+	hidden: bool,
+}
+
+export struct SectionData {
+	heading: string,
+	items: [ItemData],
+	active: int,
+}
+
+component Item inherits Rectangle {
+	in property <Location> location;
+	in property <Badge> badge;
+	in property <bool> active: false;
+	out property <string> name: location.name;
+	out property <string> icon: Logic.getIcon(location);
+	out property <string> note: lineBadge(badge);
+	out property <bool> online: location.type == LocationType.node && location.node.online;
+	out property <bool> hover <=> ta.has-hover;
+	out property <bool> pressed <=> ta.pressed;
+	callback clicked;
+
+	height: Sizing.height-base;
+	background: hover || active ? Palette.background-accent : transparent;
+	border-radius: Sizing.rad;
+
+	pure function lineBadge(badge: Badge) -> string {
+		if badge.type == BadgeType.counter { return badge.number; }
+		if badge.type == BadgeType.percent { return badge.number + "%"; }
+		if badge.type == BadgeType.type { return badge.string; }
+		return "";
+	}
+
+	ta := TouchArea {
+		mouse-cursor: default;
+		clicked => root.clicked();
+	}
+	HorizontalLayout {
+		padding-left: Sizing.padding;
+		padding-right: Sizing.padding;
+		spacing: Sizing.spacing;
+
+		i := IconedItem {
+			icon: icon;
+			label: name;
+			hover: hover;
+			active: active;
+		}
+		if location.type == LocationType.node : o := Rectangle {
+			y: (Sizing.height-base - 6px) / 2;
+			width: 6px;
+			height: 6px;
+			background: online ? Palette.success : Palette.foreground-muted;
+			border-radius: 6px / 2;
+		}
+		if badge.type != BadgeType.no : b := Rectangle {
+			y: (Sizing.height-base - Sizing.height-small) / 2;
+			height:	Sizing.height-small;
+			border-color: Palette.border-base;
+			border-width: Sizing.border-width;
+			border-radius: Sizing.rad;
+
+			HorizontalLayout {
+				padding-left: Sizing.padding;
+				padding-right: Sizing.padding;
+				s := String { text: note; font-size: Typography.size-small; }
+			}
+		}
+	}
+}
+
+component Section inherits Rectangle {
+	in property <string> heading: "";
+	in property <[ItemData]> items;
+	in property <int> active: -1;
+	callback clicked(index: int);
+
+	VerticalLayout {
+		padding-left: Sizing.padding;
+		padding-right: Sizing.padding;
+
+		if heading != "" : h := Rectangle {
+			height: Sizing.height-base;
+
+			HorizontalLayout {
+				s := String {
+					text: heading;
+					font-size: Typography.size-small;
+					font-weight: Typography.weight-bold;
+					letter-spacing: 2px;
+					vertical-alignment: bottom;
+				}
+			}
+		}
+		for item[index] in items : VerticalLayout {
+	 		if !item.hidden : Item {
+				location: item.location;
+				badge: item.badge;
+				active: index == active;
+				clicked => root.clicked(index);
+			}
+		}
+	}
+}
+
+component Header inherits Rectangle {
+	in property <string> title: "";
+	in property <string> subtitle: "";
+
+	VerticalLayout {
+		Rectangle {
+			height: Sizing.height-base;
+
+			HorizontalLayout {
+				padding-left: Sizing.padding-double;
+				padding-right: Sizing.padding;
+
+				String {
+					text: title;
+					font-size: Typography.size-large;
+					color: Palette.palette-09;
+				}
+			}
+		}
+		Rectangle {
+			height: Sizing.height-base;
+
+			HorizontalLayout {
+				padding-left: Sizing.padding-double;
+				padding-right: Sizing.padding;
+
+				String {
+					text: subtitle;
+					font-size: Typography.size-small;
+					color: Palette.foreground-base;
+					vertical-alignment: top;
+				}
+			}
+		}
+	}
+}
+
+component Summary inherits Rectangle {
+	in property <string> point: "";
+	in property <percent> fill: 0%;
+	in property <string> percent: "";
+	in property <string> size: "";
+
+	VerticalLayout {
+		Divider {}
+		HorizontalLayout {
+			padding-left: Sizing.padding-double;
+			padding-right: Sizing.padding-double;
+
+			VerticalLayout {
+				Rectangle {
+					height: Sizing.height-base;
+
+					HorizontalLayout {
+						String {
+							text: point;
+							font-weight: Typography.weight-bold;
+							color: Palette.foreground-accent;
+							vertical-alignment: bottom;
+						}
+					}
+				}
+				Rectangle {
+					height: Sizing.height-base;
+
+					Rectangle {
+						y: (Sizing.height-base - 6px) / 2;
+						height: 6px;
+						background: Palette.foreground-muted;
+						border-radius: 6px / 2;
+						clip: true;
+
+						HorizontalLayout {
+							Rectangle {
+								width: fill;
+								background: Palette.warning;
+							}
+						}
+					}
+				}
+				Rectangle {
+					height: Sizing.height-base;
+
+					HorizontalLayout {
+						String { text: percent; }
+						Rectangle { horizontal-stretch: 1; }
+						String { text: size; }
+					}
+				}
+			}
+		}
+		Rectangle {
+			height: Sizing.height-base;
+		}
+	}
+}
+
+export component SideBar inherits Rectangle {
+	in property <string> title: "";
+	in property <string> subtitle: "";
+	in property <[SectionData]> sections;
+	in property <int> active-section;
+	in property <string> summary-point: "";
+	in property <percent> summary-fill: 0%;
+	in property <string> summary-percent: "";
+	in property <string> summary-size: "";
+	callback clicked(section: int, item: int);
+
+	width: 256px;
+	background: Palette.background-surface;
+
+	ScrollView {
+		mouse-drag-pan-enabled: true;
+
+		VerticalLayout {
+			alignment: start;
+
+			Header {
+				title: title;
+				subtitle: subtitle;
+			}
+			for section[index] in sections : Section {
+				heading: section.heading;
+				items: section.items;
+				active: index == active-section ? section.active : -1;
+				clicked(item) => root.clicked(index, item);
+			}
+			Summary {
+				point: summary-point;
+				fill: summary-fill;
+				percent: summary-percent;
+				size: summary-size;
+			}
+		}
+	}
+}

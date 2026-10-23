@@ -1,0 +1,211 @@
+import { LineEdit } from "std-widgets.slint";
+import { Palette, Sizing, Typography } from "theme.slint";
+
+export component String inherits Text {
+	font_family: Typography.font-base;
+	font_size: Typography.size-base;
+	font_weight: Typography.weight-base;
+	overflow: elide;
+	vertical_alignment: center;
+	horizontal-alignment: start;
+	color: Palette.foreground-base;
+}
+
+export component Icon inherits Text {
+	font_family: Typography.font-icon;
+	font_size: Typography.size-icon;
+	font_weight: Typography.weight-base;
+	letter_spacing: Typography.spacing-icon;
+	vertical_alignment: center;
+	horizontal-alignment: center;
+	color: Palette.foreground-base;
+}
+
+export component IconButton inherits Rectangle {
+	in property <string> icon;
+	in property <bool> active: false;
+	in property <bool> disabled: false;
+	in property <string> tooltip: "";
+	out property <bool> hover <=> ta.has-hover;
+	out property <bool> pressed <=> ta.pressed;
+	callback clicked;
+
+	width: Sizing.height-base;
+	background: pressed || active ? Palette.background-accent : transparent;
+	border-radius: Sizing.rad;
+
+	ta := TouchArea {
+		mouse-cursor: default;
+		enabled: !root.disabled;
+		clicked => root.clicked();
+	}
+	HorizontalLayout {
+		padding-left: 2px;
+		alignment: center;
+
+		i := Icon {
+			text: icon;
+			color: disabled
+				? Palette.foreground-muted : hover || active
+				? Palette.foreground-accent
+				: Palette.foreground-base;
+		}
+	}
+}
+
+export component IconedItem inherits Rectangle {
+	in property <string> icon;
+	in property <string> label: "";
+	in property <bool> active: false;
+	in property <bool> hover: false;
+	in property <bool> pressed: false;
+
+	HorizontalLayout {
+		spacing: Sizing.spacing;
+		alignment: start;
+
+		if icon != "" : i := Icon {
+			text: icon;
+			width: Typography.size-icon;
+			color: active ? Palette.foreground-accent : Palette.foreground-base;
+		}
+		if label != "" : s := String {
+			text: label;
+			color: active ? Palette.foreground-accent : Palette.foreground-base;
+			horizontal_stretch: 1;
+		}
+	}
+}
+
+export component Input inherits Rectangle {
+	in property <string> placeholder: "";
+	in property <string> query: "";
+	in property <bool> disabled: false;
+	out property <string> value <=> ti.text;
+	out property <bool> focused <=> ti.has-focus;
+	callback accepted(query: string);
+	callback edited(query: string);
+
+	changed query => { self.value = query }
+
+	height: Sizing.height-base;
+	background: Palette.background-base;
+	border-color: focused ? Palette.border-accent : Palette.border-base;
+	border-width: Sizing.border-width;
+	border-radius: self.height / 2;
+	clip: true;
+
+	HorizontalLayout {
+		padding-left: Sizing.padding;
+		padding-right: Sizing.padding;
+
+		ti := TextInput {
+			font-family: Typography.font-base;
+			font-size: Typography.size-base;
+			font-weight: Typography.weight-base;
+			color: Palette.foreground-base;
+			selection-foreground-color: Palette.foreground-select;
+			selection-background-color: Palette.background-select;
+			text-cursor-width: Typography.width-cursor;
+			vertical-alignment: center;
+			input-type: text;
+			read-only: disabled;
+			accepted  => { root.accepted(self.text); }
+			edited => { root.edited(self.text); }
+
+			HorizontalLayout {
+				p := String {
+					text: placeholder;
+					visible: ti.text == "";
+					color: Palette.foreground-muted;
+				}
+			}
+		}
+	}
+}
+export component Divider {
+	in property <bool> vertical: false;
+
+	if !root.vertical: Rectangle {
+		height: Sizing.border-width;
+		background: Palette.border-base;
+	}
+	if root.vertical: Rectangle {
+		width: Sizing.border-width;
+		background: Palette.border-base;
+	}
+}
+
+
+
+
+
+
+
+export component OpenerIcon inherits Rectangle {
+	in property <image> icon;
+	out property <bool> hover <=> ta.has-hover;
+
+	width: Sizing.height-base - Sizing.border-width * 2;
+	height: Sizing.height-base - Sizing.border-width * 2;
+	border-color: hover ? Palette.border-base : transparent;
+	border-width: Sizing.border-width;
+	border-radius: Sizing.rad;
+
+	ta := TouchArea { mouse-cursor: default; }
+	i := Image { source: icon; image-fit: cover; }
+}
+
+export component MetaRow inherits Rectangle {
+	in property <string> key: "";
+    in property <string> value: "";
+
+    height: Sizing.height-base - Sizing.border-width;
+
+    VerticalLayout {
+    	HorizontalLayout {
+   			spacing: Sizing.spacing;
+
+   			k := String {
+      			text: key;
+         		horizontal-alignment: start;
+          		color: Palette.foreground-base;
+           	}
+      		v := String {
+        		text: value;
+          		horizontal-alignment: end;
+            	color: Palette.foreground-accent;
+            }
+     	}
+     	Rectangle {
+    		height: Sizing.border-width;
+    		background: Palette.foreground-muted;
+      	}
+    }
+}
+
+export component MetaSection inherits Rectangle {
+	in property <string> heading: "";
+
+	VerticalLayout {
+		if heading != "" : h := Rectangle {
+			height: Sizing.height-base;
+
+			// HorizontalLayout {
+				s := String {
+					text: heading;
+					font-size: Typography.size-small;
+					font-weight: Typography.weight-bold;
+					letter-spacing: 2px;
+					vertical-alignment: bottom;
+				}
+			// }
+		}
+		VerticalLayout {
+			padding-left: Sizing.padding;
+			padding-right: Sizing.padding;
+
+			@children
+		}
+	}
+}

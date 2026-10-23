@@ -1,0 +1,298 @@
+import { Palette, Sizing, Typography, Icons } from "theme.slint";
+import { String, IconButton, Input } from "common.slint";
+import { LocationType, Location, Logic as LocationLogic } from "location.slint";
+import { ViewType } from "view.slint";
+
+export enum CrumbType {
+	folder,
+	separator,
+	root,
+}
+
+component Navigation inherits Rectangle {
+	in property <bool> can-back: false;
+	in property <bool> can-forward: false;
+	in property <bool> can-up: false;
+	out property <bool> back-hover <=> b.hover;
+	out property <bool> back-pressed <=> b.pressed;
+	out property <bool> forward-hover <=> f.hover;
+	out property <bool> forward-pressed <=> f.pressed;
+	out property <bool> up-hover <=> u.hover;
+	out property <bool> up-pressed <=> u.pressed;
+	callback back;
+	callback forward;
+	callback up;
+
+	HorizontalLayout {
+		spacing: Sizing.spacing;
+
+		b := IconButton {
+			icon: Icons.back;
+			disabled: !can-back;
+			clicked => root.back();
+		}
+		f := IconButton {
+			icon: Icons.forward;
+			disabled: !can-forward;
+			clicked => root.forward();
+		}
+		u := IconButton {
+			icon: Icons.up;
+			disabled: !can-up;
+			clicked => root.up();
+		}
+	}
+}
+
+component Crumb inherits Rectangle {
+	in property <Location> location;
+	in property <int> index: -1;
+	in property <bool> active: false;
+	out property <string> name: location.name;
+	out property <string> icon: LocationLogic.getIcon(location);
+	out property <bool> hover <=> ta.has-hover;
+	out property <bool> pressed <=> ta.pressed;
+	callback clicked;
+
+	HorizontalLayout {
+		if index > 0 : Rectangle {
+			sep := String {
+				text: "/";
+				font-family: Typography.font-mono;
+			}
+		}
+		Rectangle {
+			background: hover ? Palette.background-accent : transparent;
+
+			ta := TouchArea {
+				mouse-cursor: default;
+				clicked => root.clicked();
+			}
+			HorizontalLayout {
+				padding-left: Sizing.padding;
+				padding-right: Sizing.padding;
+
+				s := String {
+					text: location.type == LocationType.device ? icon : name;
+					font-family: Typography.font-mono;
+					color: hover || active ? Palette.foreground-accent : Palette.foreground-base;
+					letter-spacing: location.type == LocationType.device ? Typography.spacing-icon : 0;
+				}
+			}
+		}
+	}
+}
+
+component BreadCrumbs inherits Rectangle {
+	in property <[Location]> crumbs;
+	in property <int> crumb-index: -1;
+	out property <Location> active-crumb: crumbs[crumb-index];
+	out property <bool> copy-hover <=> c.hover;
+	out property <bool> hover: ta.has-hover || copy-hover;
+	out property <bool> copy-pressed <=> c.pressed;
+	callback clicked(index: int);
+	callback copy;
+
+	background: Palette.background-base;
+	border_color: Palette.border-base;
+	border_width: Sizing.border-width;
+	border_radius: self.height / 2;
+	clip: true;
+
+	ta := TouchArea { mouse-cursor: text; }
+	HorizontalLayout {
+		padding_left: Sizing.padding;
+		spacing: Sizing.spacing;
+
+		HorizontalLayout {
+			horizontal-stretch: 1;
+			alignment: start;
+
+			for location[index] in crumbs : Crumb {
+				location: location;
+				index: index;
+				active: index == crumb-index;
+				clicked => root.clicked(index);
+			}
+		}
+		c := IconButton {
+			icon: Icons.copy;
+			clicked => root.copy();
+		}
+	}
+}
+
+component Search inherits Input {
+	min-width: 128px;
+}
+
+component Toolkit inherits Rectangle {
+	out property <bool> paste-hover <=> p.hover;
+	out property <bool> paste-pressed <=> p.pressed;
+	out property <bool> filter-hover <=> f.hover;
+	out property <bool> filter-pressed <=> f.pressed;
+	out property <bool> group-hover <=> g.hover;
+	out property <bool> group-pressed <=> g.pressed;
+	out property <bool> sort-hover <=> s.hover;
+	out property <bool> sort-pressed <=> s.pressed;
+	callback paste;
+	callback filter;
+	callback group;
+	callback sort;
+
+	HorizontalLayout {
+		p := IconButton {
+			icon: Icons.paste;
+			clicked => paste();
+		}
+		f := IconButton {
+			icon: Icons.filter;
+			clicked => filter();
+		}
+		g := IconButton {
+			icon: Icons.group;
+			clicked => group();
+		}
+		s := IconButton {
+			icon: Icons.sort;
+			clicked => sort();
+		}
+	}
+}
+
+export component ViewButton inherits IconButton {
+	in property <ViewType> type;
+
+	icon: getIcon();
+	y: Sizing.border-width;
+	height: Sizing.height-base - Sizing.border-width * 2;
+	background: self.hover || self.active ? Palette.background-accent : transparent;
+	border-radius: 0;
+
+	pure function getIcon() -> string {
+		if type == ViewType.table { return Icons.view-list; }
+		if type == ViewType.grid { return Icons.view-grid; }
+		if type == ViewType.gallery { return Icons.view-gallery; }
+		if type == ViewType.tree { return Icons.view-tree; }
+		if type == ViewType.radial { return Icons.view-radial; }
+		return "";
+	}
+}
+
+component ViewSwitch inherits Rectangle {
+	in property <ViewType> active-view;
+	callback clicked(type: ViewType);
+
+	background: Palette.background-base;
+	border-color: Palette.border-base;
+	border-width: Sizing.border-width;
+	border-radius: Sizing.rad;
+	clip: true;
+
+	HorizontalLayout {
+		for type in [
+			ViewType.table,
+			ViewType.grid,
+			ViewType.gallery,
+			ViewType.tree,
+			ViewType.radial,
+		] : ViewButton {
+			type: type;
+			active: type == active-view;
+			clicked => root.clicked(type);
+		}
+	}
+}
+
+component SplitToggle inherits IconButton {
+	icon: Icons.view-split;
+}
+
+export component ToolBar inherits Rectangle {
+	in property <[Location]> history;
+	in property <int> history-index: -1;
+	in property <[Location]> breadcrumbs;
+	in property <int> breadcrumb-index: -1;
+	in property <bool> can-back: false;
+	in property <bool> can-forward: false;
+	in property <bool> can-up: false;
+	in property <string> search-placeholder: "";
+	in property <string> search-query: "";
+	in property <ViewType> view-type;
+	out property <Location> location: history[history-index];
+	out property <bool> back-hover <=> n.back-hover;
+	out property <bool> back-pressed <=> n.back-pressed;
+	out property <bool> forward-hover <=> n.forward-hover;
+	out property <bool> forward-pressed <=> n.forward-pressed;
+	out property <bool> up-hover <=> n.up-hover;
+	out property <bool> up-pressed <=> n.up-pressed;
+	out property <Location> active-crumb <=> b.active-crumb;
+	out property <bool> breadcrumbs-hover <=> b.hover;
+	out property <bool> breadcrumbs-copy-hover <=> b.copy-hover;
+	out property <bool> breadcrumbs-copy-pressed <=> b.copy-pressed;
+	out property <bool> search-focused <=> s.focused;
+	out property <string> search-value <=> s.value;
+	out property <bool> paste-hover <=> t.paste-hover;
+	out property <bool> paste-pressed <=> t.paste-pressed;
+	out property <bool> filter-hover <=> t.filter-hover;
+	out property <bool> filter-pressed <=> t.filter-pressed;
+	out property <bool> group-hover <=> t.group-hover;
+	out property <bool> group-pressed <=> t.group-pressed;
+	out property <bool> sort-hover <=> t.sort-hover;
+	out property <bool> sort-pressed <=> t.sort-pressed;
+	callback back;
+	callback forward;
+	callback up;
+	callback crumb-clicked(index: int);
+	callback breadcrumbs-copy;
+	callback search-accepted(query: string);
+	callback search-edited(query: string);
+	callback paste;
+	callback filter;
+	callback group;
+	callback sort;
+	callback view(type: ViewType);
+	callback split-toggle;
+
+	height: Sizing.height-base + Sizing.padding * 2;
+	background: Palette.background-surface;
+
+	HorizontalLayout {
+		padding: Sizing.padding;
+		spacing: Sizing.padding;
+
+		n := Navigation {
+			can-back: root.can-back;
+			can-forward: root.can-forward;
+			can-up: root.can-up;
+			back => root.back();
+			forward => root.forward();
+			up => root.up();
+		}
+		b := BreadCrumbs {
+			crumbs: breadcrumbs;
+			crumb-index: breadcrumb-index;
+			clicked(index) => root.crumb-clicked(index);
+			copy => root.breadcrumbs-copy();
+		}
+		s := Search {
+			placeholder: search-placeholder;
+			query: search-query;
+			accepted(query) => root.search-accepted(query);
+			edited(query) => root.search-edited(query);
+		}
+		t := Toolkit {
+			paste => root.paste();
+			filter => root.filter();
+			group => root.group();
+			sort => root.sort();
+		}
+		v := ViewSwitch {
+			active-view: view-type;
+			clicked(type) => view(type);
+		}
+		st := SplitToggle {
+			clicked => root.split-toggle();
+		}
+	}
+}

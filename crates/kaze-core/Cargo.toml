@@ -1,0 +1,21 @@
+[package]
+name = "kaze-core"
+description = "KAZE core without UI: resources, providers, tabs, navigation and actions"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+categories.workspace = true
+keywords.workspace = true
+
+[lib]
+doctest = false
+
+[dependencies]
+icu_collator.workspace = true
+icu_locale_core.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+users.workspace = true

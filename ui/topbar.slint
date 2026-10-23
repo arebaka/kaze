@@ -1,0 +1,157 @@
+import { Palette, Sizing, Typography, Icons } from "theme.slint";
+import { Icon, IconedItem, IconButton } from "common.slint";
+import { Location, Logic as LocationLogic } from "location.slint";
+import { ViewType } from "view.slint";
+
+export struct TabMeta {
+	type: ViewType,
+	title: string,
+	location: Location,
+	permanent: bool,
+}
+
+component TabClose inherits Rectangle {
+	in property <bool> permanent: false;
+	in property <bool> root-hover: false;
+	out property <bool> hover <=> ta.has-hover;
+	out property <bool> pressed <=> ta.pressed;
+	callback click;
+
+	y: (Sizing.height-base - Typography.size-icon) / 2;
+	width: permanent ? 0 : Typography.size-icon;
+	height: permanent ? 0 : Typography.size-icon;
+	background: ta.pressed ? Palette.background-accent : transparent;
+	visible: !permanent;
+
+	ta := TouchArea {
+		mouse-cursor: default;
+		enabled: !permanent;
+		clicked => root.click();
+	}
+	HorizontalLayout {
+		alignment: end;
+
+		if root.visible: i := Icon {
+			text: Icons.close;
+			font-size: Typography.size-base;
+			color: hover ? Palette.foreground-accent : Palette.foreground-base;
+			opacity: root-hover || hover ? 1 : 0;
+		}
+	}
+}
+
+component Tab inherits Rectangle {
+	in property <TabMeta> data;
+	in property <bool> active: false;
+	out property <string> icon: Logic.getIcon(data);
+	out property <bool> close-hover: c.hover;
+	out property <bool> hover: ta.has-hover || close-hover;
+	out property <bool> close-pressed: c.pressed;
+	out property <bool> pressed: ta.pressed;
+	callback click;
+	callback close;
+
+	min-width: data.permanent ? Sizing.height-base : 128px;
+	background: hover || active ? Palette.background-surface : transparent;
+
+	ta := TouchArea {
+		mouse-cursor: default;
+		clicked => root.click();
+	}
+	HorizontalLayout {
+		padding_left: data.permanent ? 0 : Sizing.padding;
+		alignment: data.permanent ? center : stretch;
+
+		i := IconedItem {
+			icon: icon;
+			label: data.permanent ? "" : data.title;
+			hover: hover;
+			active: active;
+		}
+		c := TabClose {
+			permanent: data.permanent;
+			root-hover: hover;
+			click => root.close();
+		}
+	}
+}
+
+component TabBar inherits Rectangle {
+	in property <[TabMeta]> tabs;
+	in property <int> active-tab-index: -1;
+	out property <TabMeta> active-tab: tabs[active-tab-index];
+	callback switch(index: int);
+	callback close(index: int);
+	callback new;
+
+	HorizontalLayout {
+		horizontal-stretch: 1;
+		spacing: Sizing.spacing;
+		alignment: start;
+
+		for tab[index] in tabs : Tab {
+			data: tab;
+			active: index == active-tab-index;
+			click => root.switch(index);
+			close => root.close(index);
+		}
+		n := IconButton {
+			icon: Icons.add;
+			border-radius: 0;
+			clicked => root.new();
+		}
+	}
+}
+
+export component PaletteToggle inherits IconButton {
+	icon: Icons.palette;
+	border-radius: 0;
+}
+
+export component MenuToggle inherits IconButton {
+	icon: Icons.menu;
+	border-radius: 0;
+}
+
+export component TopBar inherits Rectangle {
+	in property <[TabMeta]> tabs;
+	in property <int> active-tab-index: -1;
+	out property <TabMeta> active-tab <=> t.active-tab;
+	callback tab-switch(index: int);
+	callback tab-close(index: int);
+	callback tab-new;
+	callback pallete-toggle;
+	callback menu-toggle;
+
+	height: Sizing.height-base;
+	background: Palette.background-base;
+	cache-rendering-hint: true;
+
+	HorizontalLayout {
+		padding_left: Sizing.padding;
+		padding_right: Sizing.padding;
+		spacing: Sizing.spacing;
+
+		t := TabBar {
+			tabs: tabs;
+			active-tab-index: active-tab-index;
+			switch(index) => root.tab-switch(index);
+			close(index) => root.tab-close(index);
+			new => root.tab-new();
+		}
+		p := PaletteToggle {
+			clicked => root.pallete-toggle();
+		}
+		m := MenuToggle {
+			clicked => root.menu-toggle();
+		}
+	}
+}
+
+export global Logic {
+	public pure function getIcon(tab: TabMeta) -> string {
+		if tab.type == ViewType.overview  { return Icons.overview; }
+
+		return LocationLogic.getIcon(tab.location);
+	}
+}

@@ -1,0 +1,50 @@
+import { Icons } from "theme.slint";
+
+export enum DirectorySpecial {
+	no,
+	home,
+	desktop,
+	downloads,
+	documents,
+	pictures,
+	music,
+	videos,
+	public,
+	templates,
+	config,
+	cache,
+	secret,
+	system,
+	temporary,
+	other,
+}
+
+export struct Directory {
+	special: DirectorySpecial,
+	// code:      TechLanguage,
+}
+
+export global Logic {
+	public pure function getIcon(directory: Directory, readable: bool, writable: bool) -> string {
+		if directory.special == DirectorySpecial.no        { return Icons.directory; }
+		if directory.special == DirectorySpecial.home      { return Icons.dir-home; }
+		if directory.special == DirectorySpecial.desktop   { return Icons.dir-desktop; }
+		if directory.special == DirectorySpecial.downloads { return Icons.dir-download; }
+		if directory.special == DirectorySpecial.documents { return Icons.dir-document; }
+		if directory.special == DirectorySpecial.pictures  { return Icons.dir-image; }
+		if directory.special == DirectorySpecial.music     { return Icons.dir-music; }
+		if directory.special == DirectorySpecial.videos    { return Icons.dir-video; }
+		if directory.special == DirectorySpecial.public    { return Icons.dir-public; }
+		if directory.special == DirectorySpecial.templates { return Icons.dir-template; }
+		if directory.special == DirectorySpecial.config    { return Icons.dir-config; }
+		if directory.special == DirectorySpecial.cache     { return Icons.dir-cache; }
+		if directory.special == DirectorySpecial.secret    { return Icons.dir-secret; }
+		if directory.special == DirectorySpecial.system    { return Icons.dir-system; }
+		if directory.special == DirectorySpecial.temporary    { return Icons.dir-temporary; }
+
+		if !readable { return Icons.dir-forbidden; }
+		if !writable { return Icons.dir-readonly; }
+
+		return Icons.dir-special;
+	}
+}

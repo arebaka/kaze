@@ -1,0 +1,199 @@
+import { ListView } from "std-widgets.slint";
+import { Palette, Sizing, Typography, Icons } from "../theme.slint";
+import { Icon, String } from "../common.slint";
+import { FileType, Entry, Logic as FileLogic } from "../file.slint";
+import { View, StatusKind, SortColumn, SortDirection } from "../view.slint";
+
+component Cell inherits Rectangle {
+	in property <LayoutAlignment> alignment: start;
+
+	HorizontalLayout {
+		padding-left: Sizing.padding;
+		padding-right: Sizing.padding;
+		spacing: Sizing.spacing;
+		alignment: alignment;
+
+		@children
+	}
+}
+
+component HeaderCell inherits Rectangle {
+	in property <LayoutAlignment> alignment: start;
+	callback clicked;
+
+	TouchArea {
+		mouse-cursor: pointer;
+		clicked => root.clicked();
+	}
+	Cell {
+		alignment: root.alignment;
+
+		@children
+	}
+}
+
+component Row inherits Rectangle {
+	out property <bool> hover <=> ta.has-hover;
+	out property <bool> pressed <=> ta.pressed;
+	callback click;
+	callback double-click;
+
+	height: Sizing.height-base;
+
+	ta := TouchArea {
+		mouse-cursor: default;
+		clicked => root.click();
+		double-clicked => root.double-click();
+	}
+	HorizontalLayout {
+		@children
+	}
+}
+
+export component FileRow inherits Row {
+	in property <Entry> data;
+	in property <bool> active: false;
+	out property <string> icon: FileLogic.getIcon(data.file);
+	out property <brush> brush: FileLogic.getBrush(data.file);
+	out property <brush> icon-brush: FileLogic.getIconBrush(data.file);
+
+	background: self.hover || active ? Palette.background-accent : transparent;
+
+	n := Cell {
+		horizontal-stretch: 1;
+		alignment: start;
+
+		i := Icon {
+			text: icon;
+			color: icon-brush;
+		}
+		ns := String {
+			text: data.file.name;
+			font-weight: data.file.type == FileType.directory ? Typography.weight-bold : Typography.weight-base;
+			font-italic: data.file.hidden;
+			color: brush;
+		}
+	}
+	s := Cell {
+		width: 160px;
+		alignment: end;
+
+		ss := String { text: data.size; }
+	}
+	m := Cell {
+		width: 160px;
+		alignment: end;
+
+		ms := String { text: data.modified; }
+	}
+}
+
+export component TableView inherits View {
+	property <bool> progress-shown: false;
+
+	pure function header-brush(column: SortColumn) -> brush {
+		return root.sort-column == column ? Palette.foreground-accent : Palette.foreground-base;
+	}
+
+	init => {
+		sv.content-y = root.scroll-position;
+	}
+	changed entries => {
+		sv.content-y = root.scroll-position;
+	}
+	changed status-kind => {
+		root.progress-shown = false;
+	}
+
+	Timer {
+		interval: 300ms;
+		running: root.status-kind == StatusKind.progress && !root.progress-shown;
+		triggered => {
+			root.progress-shown = true;
+		}
+	}
+
+	VerticalLayout {
+		h := Row {
+			background: Palette.background-surface;
+
+			n := HeaderCell {
+				horizontal-stretch: 1;
+				alignment: start;
+				clicked => root.sort(SortColumn.name);
+
+				String { text: "Name"; color: root.header-brush(SortColumn.name); }
+				Icon {
+					text: root.sort-column == SortColumn.name && root.sort-direction == SortDirection.descending
+						? Icons.sort-alpha-desc : Icons.sort-alpha-asc;
+					color: root.header-brush(SortColumn.name);
+				}
+			}
+			s := HeaderCell {
+				width: 160px;
+				alignment: end;
+				clicked => root.sort(SortColumn.size);
+
+				String { text: "Size"; horizontal-alignment: end; color: root.header-brush(SortColumn.size); }
+				Icon {
+					text: root.sort-column == SortColumn.size && root.sort-direction == SortDirection.ascending
+						? Icons.sort-number-asc : Icons.sort-number-desc;
+					horizontal-alignment: end;
+					color: root.header-brush(SortColumn.size);
+				}
+			}
+			m := HeaderCell {
+				width: 160px;
+				alignment: end;
+				clicked => root.sort(SortColumn.modified);
+
+				String { text: "Modified"; color: root.header-brush(SortColumn.modified); }
+				Icon {
+					text: root.sort-column == SortColumn.modified && root.sort-direction == SortDirection.ascending
+						? Icons.sort-date-asc : Icons.sort-date-desc;
+					color: root.header-brush(SortColumn.modified);
+				}
+			}
+		}
+		sv := ListView {
+			mouse-drag-pan-enabled: true;
+			content-height: (root.entries.length + 1) * Sizing.height-base;
+			changed content-y => {
+				root.sync(root.active-entry-index, self.content-y);
+			}
+
+			for entry[index] in root.entries : FileRow {
+				data: entry;
+				active: index == root.active-entry-index;
+				click => {
+					root.sync(index, sv.content-y);
+					root.click(entry, index);
+				}
+				double-click => root.double-click(entry, index);
+			}
+		}
+		Cell {
+			height: Sizing.height-base;
+			background: Palette.background-surface;
+
+			if root.status-kind != StatusKind.none && (root.status-kind != StatusKind.progress || root.progress-shown) : String {
+				horizontal-stretch: 0;
+				text: root.status-text;
+				color: root.status-kind == StatusKind.error ? Palette.error
+					: root.status-kind == StatusKind.warning ? Palette.warning
+					: Palette.foreground-base;
+			}
+			Rectangle {
+				horizontal-stretch: 1;
+			}
+			if root.folder-count > 0 : String {
+				horizontal-stretch: 0;
+				text: root.folder-count == 1 ? "1 folder" : "\{root.folder-count} folders";
+			}
+			if root.file-count > 0 : String {
+				horizontal-stretch: 0;
+				text: root.file-count == 1 ? "1 file" : "\{root.file-count} files";
+			}
+		}
+	}
+}

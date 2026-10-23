@@ -1,0 +1,42 @@
+import { Icons } from "theme.slint";
+import { File, Logic as FileLogic } from "file.slint";
+import { Device, Logic as DeviceLogic } from "device.slint";
+import { Node, Logic as NetworkLogic } from "network.slint";
+import { Cloud, Logic as CloudLogic } from "cloud.slint";
+import { VirtualDevice, Logic as VirtualLogic } from "virtual.slint";
+
+export enum LocationType {
+	other,
+	recent,
+	trash,
+	directory,
+	device,
+	node,
+	cloud,
+	virtual,
+}
+
+export struct Location {
+	name:    string,
+	type:    LocationType,
+	file:    File,
+	device:  Device,
+	node:    Node,
+	cloud:   Cloud,
+	virtual: VirtualDevice,
+}
+
+export global Logic {
+	public pure function getIcon(location: Location) -> string {
+		// if location.type == LocationType.overview  { return Icons.overview; }
+		if location.type == LocationType.recent    { return Icons.recent; }
+		if location.type == LocationType.trash     { return Icons.trash; }
+		if location.type == LocationType.directory { return FileLogic.getIcon(location.file); }
+		if location.type == LocationType.device    { return DeviceLogic.getIcon(location.device); }
+		if location.type == LocationType.node      { return NetworkLogic.getIcon(location.node); }
+		if location.type == LocationType.cloud     { return CloudLogic.getIcon(location.cloud); }
+		if location.type == LocationType.virtual   { return VirtualLogic.getIcon(location.virtual); }
+
+		return "";
+	}
+}

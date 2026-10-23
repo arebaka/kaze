@@ -1,0 +1,49 @@
+import { Palette } from "theme.slint";
+import { Location } from "location.slint";
+import { Entry } from "file.slint";
+
+export enum ViewType {
+	other,
+	overview,
+	table,
+	grid,
+	gallery,
+	tree,
+	radial,
+}
+
+export enum StatusKind {
+	none,
+	progress,
+	warning,
+	error,
+}
+
+export enum SortColumn {
+	name,
+	size,
+	modified,
+}
+
+export enum SortDirection {
+	ascending,
+	descending,
+}
+
+export component View inherits Rectangle {
+	in property <[Entry]> entries;
+	in property <int> active-entry-index: -1;
+	in property <length> scroll-position: 0;
+	in property <int> folder-count: 0;
+	in property <int> file-count: 0;
+	in property <string> status-text: "";
+	in property <StatusKind> status-kind: StatusKind.none;
+	in property <SortColumn> sort-column: SortColumn.name;
+	in property <SortDirection> sort-direction: SortDirection.ascending;
+	callback sort(column: SortColumn);
+	callback click(entry: Entry, index: int);
+	callback double-click(entry: Entry, index: int);
+	callback sync(active-entry-index: int, scroll-position: length);
+
+	background: Palette.background-base;
+}

@@ -1,0 +1,37 @@
+import { Icons } from "theme.slint";
+
+export enum NodeType {
+	other,
+	laptop,
+	workstation,
+	phone,
+	tablet,
+	watch,
+	nas,
+	switch,
+	playstation,
+}
+
+export struct Node {
+	id: string,
+	type: NodeType,
+	size: int,
+	used: int,
+	available: int,
+	online: bool,
+}
+
+export global Logic {
+	public pure function getIcon(node: Node) -> string {
+		if node.type == NodeType.laptop      { return Icons.node-laptop; }
+		if node.type == NodeType.workstation { return Icons.node-workstation; }
+		if node.type == NodeType.phone       { return Icons.node-phone; }
+		if node.type == NodeType.tablet      { return Icons.node-tablet; }
+		if node.type == NodeType.watch       { return Icons.node-watch; }
+		if node.type == NodeType.nas         { return Icons.node-nas; }
+		if node.type == NodeType.switch      { return Icons.node-switch; }
+		if node.type == NodeType.playstation { return Icons.node-playstation; }
+
+		return Icons.node;
+	}
+}

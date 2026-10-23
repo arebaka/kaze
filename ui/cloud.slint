@@ -1,0 +1,27 @@
+import { Icons } from "theme.slint";
+
+export enum CloudType {
+	other,
+	google-drive,
+	icloud,
+	yandex-disk,
+	pcloud,
+	s3,
+	cloud,
+}
+
+export struct Cloud {
+	type: CloudType,
+}
+
+export global Logic {
+	public pure function getIcon(cloud: Cloud) -> string {
+		if cloud.type == CloudType.google-drive { return Icons.cl-google-drive; }
+		if cloud.type == CloudType.icloud       { return Icons.cl-icloud; }
+		if cloud.type == CloudType.yandex-disk  { return Icons.cl-yandex-disk; }
+		if cloud.type == CloudType.pcloud       { return Icons.cloud; }
+		if cloud.type == CloudType.s3           { return Icons.cl-s3; }
+
+		return Icons.cloud;
+	}
+}

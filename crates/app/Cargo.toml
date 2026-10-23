@@ -1,0 +1,54 @@
+[package]
+name = "app"
+description = "main application"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+categories.workspace = true
+keywords.workspace = true
+build = "build.rs"
+
+[[bin]]
+name = "kaze"
+path = "src/main.rs"
+test = true
+doctest = false
+bench = false
+doc = false
+proc-macro = false
+harness = true
+required-features = []
+
+[dependencies]
+# core = { path = "../core" }
+kaze-core = { path = "../kaze-core" }
+
+tokio.workspace = true
+# async-trait.workspace       = true
+# futures.workspace           = true
+# serde.workspace             = true
+# serde_json.workspace        = true
+# thiserror.workspace         = true
+# anyhow.workspace            = true
+# tracing.workspace           = true
+# tracing-subscriber.workspace = true
+# dashmap.workspace           = true
+# arc-swap.workspace          = true
+# parking_lot.workspace       = true
+# uuid.workspace              = true
+chrono.workspace            = true
+# mime_guess.workspace        = true
+# dirs.workspace              = true
+# shellexpand.workspace       = true
+slint.workspace = true
+
+[dev-dependencies]
+i-slint-backend-testing.workspace = true
+i-slint-core.workspace = true
+
+[build-dependencies]
+slint-build = "1.16.1"

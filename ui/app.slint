@@ -1,0 +1,790 @@
+import { Palette, Sizing, Typography } from "theme.slint";
+import { Location } from "location.slint";
+import { File, Entry } from "file.slint";
+
+import { ViewType, StatusKind, SortColumn, SortDirection } from "view.slint";
+import { TabMeta, TopBar } from "topbar.slint";
+import { ToolBar } from "toolbar.slint";
+import { TableView } from "views/table.slint";
+// import { DirectorySpecial } from "directory.slint";
+// import { DeviceType, DeviceFormat, DeviceTransport, FileSystem, OperatingSystem } from "device.slint";
+// import { ToolBar } from "toolbar.slint";
+// import { NodeType } from "network.slint";
+// import { Type as CloudType } from "cloud.slint";
+// import { BadgeType, SideBar, SectionData } from "sidebar.slint";
+
+export component App inherits Window {
+	in property <[TabMeta]> tabs;
+	in property <int> active-tab-index: -1;
+	in property <[Location]> history;
+	in property <int> history-index: -1;
+	in property <[Location]> breadcrumbs;
+	in property <int> breadcrumb-index: -1;
+	in property <string> search-placeholder: "";
+	in property <string> search-query: "";
+	// in property <string> app-title: "";
+	// in property <string> app-subtitle: "";
+	// in property <[SectionData]> sections;
+	// in property <int> active-section;
+	// in property <string> summary-point: "";
+	// in property <percent> summary-fill: 0%;
+	// in property <string> summary-percent: "";
+	// in property <string> summary-size: "";
+	// in property <[FileData]> files;
+	// in property <int> active-file: -1;
+	in property <[Entry]> entries;
+	in property <int> active-entry-index: -1;
+	in property <length> scroll-position: 0;
+	in property <int> folder-count: 0;
+	in property <int> file-count: 0;
+	in property <string> status-text: "";
+	in property <StatusKind> status-kind: StatusKind.none;
+	in property <SortColumn> sort-column: SortColumn.name;
+	in property <SortDirection> sort-direction: SortDirection.ascending;
+	in property <bool> can-back: false;
+	in property <bool> can-forward: false;
+	in property <bool> can-up: false;
+	out property <bool> focused <=> handler.has-focus;
+	out property <TabMeta> active-tab <=> top.active-tab;
+	out property <Location> location <=> tool.location;
+	out property <bool> sort-pressed <=> tool.sort-pressed;
+	out property <ViewType> view-type <=> tool.view-type;
+	out property <bool> back-hover <=> tool.back-hover;
+	out property <bool> back-pressed <=> tool.back-pressed;
+	out property <bool> forward-hover <=> tool.forward-hover;
+	out property <bool> forward-pressed <=> tool.forward-pressed;
+	out property <bool> up-hover <=> tool.up-hover;
+	out property <bool> up-pressed <=> tool.up-pressed;
+	out property <Location> active-breadcrumb <=> tool.active-crumb;
+	out property <bool> breadcrumbs-hover <=> tool.breadcrumbs-hover;
+	out property <bool> breadcrumbs-copy-hover <=> tool.breadcrumbs-copy-hover;
+	out property <bool> breadcrumbs-copy-pressed <=> tool.breadcrumbs-copy-pressed;
+	out property <bool> search-focused <=> tool.search-focused;
+	out property <string> search-value <=> tool.search-value;
+	out property <bool> paste-hover <=> tool.paste-hover;
+	out property <bool> paste-pressed <=> tool.paste-pressed;
+	out property <bool> filter-hover <=> tool.filter-hover;
+	out property <bool> filter-pressed <=> tool.filter-pressed;
+	out property <bool> group-hover <=> tool.group-hover;
+	out property <bool> group-pressed <=> tool.group-pressed;
+	out property <bool> sort-hover <=> tool.sort-hover;
+	callback key-pressed(event: KeyEvent) -> bool;
+	callback key-released(event: KeyEvent) -> EventResult;
+	callback focus-gained(reason: FocusReason);
+	callback focus-lost(reason: FocusReason);
+	callback tab-switch(index: int);
+	callback tab-close(index: int);
+	callback tab-new();
+	callback tab-sync(tab-index: int, active-entry-index: int, scroll-position: length);
+	callback pallete-toggle();
+	callback menu-toggle();
+	callback entry-click(entry: Entry, index: int);
+	callback entry-double-click(entry: Entry, index: int);
+	callback navigate-back();
+	callback navigate-forward();
+	callback navigate-up();
+	callback navigate-breadcrumb(index: int);
+	callback sort-by(column: SortColumn);
+
+	title: "";
+	// icon: "";
+	default-font-family: Typography.font-base;
+	default-font-size: Typography.size-base;
+	default-font-weight: Typography.weight-base;
+	preferred-width: 100%;
+	preferred-height: 100%;
+	min-height: Sizing.height-base;
+	max-width: 4320px;
+	max-height: 7680px;
+	forward-focus: handler;
+
+	// public function sync() {
+	// 	tabs[active-tab-index].active-entry-index = active-entry-index;
+	// 	tabs[active-tab-index].scroll-position = scroll-position;
+	// }
+
+	// public function commit() {
+	// 	active-tab = tabs[active-tab-index];
+	// 	active-entry-index = active-tab.active-entry-index;
+	// 	active-entry = active-tab.entries[active-entry-index];
+	// 	active-file = active-entry.file;
+	// 	scroll-position = active-tab.scroll-position;
+	// }
+
+    public function set-title(title: string) {
+        root.title = title;
+    }
+    public function set-icon(icon: image) {
+        root.icon = icon;
+    }
+
+    handler := FocusScope {
+	   	key-pressed(event) => {
+			root.key-pressed(event) ? EventResult.accept : EventResult.reject
+		}
+	   	key-released(event) => root.key-released(event);
+		focus-gained(reason) => root.focus-gained(reason);
+		focus-lost(reason) => root.focus-lost(reason);
+    }
+
+    VerticalLayout {
+    	top := TopBar {
+     		tabs: tabs;
+        	active-tab-index: active-tab-index;
+         	tab-switch(index) => root.tab-switch(index);
+			tab-close(index) => root.tab-close(index);
+			tab-new() => root.tab-new();
+			pallete-toggle() => root.pallete-toggle();
+			menu-toggle() => root.menu-toggle();
+        }
+     	tool := ToolBar {
+       		history: history;
+        	history-index: history-index;
+      		breadcrumbs: breadcrumbs;
+			breadcrumb-index: breadcrumb-index;
+			search-placeholder: search-placeholder;
+			search-query: search-query;
+			view-type: active-tab.type;
+			can-back: root.can-back;
+			can-forward: root.can-forward;
+			can-up: root.can-up;
+			back => root.navigate-back();
+			forward => root.navigate-forward();
+			up => root.navigate-up();
+			crumb-clicked(index) => root.navigate-breadcrumb(index);
+		}
+        HorizontalLayout {
+/*
+       		SideBar {
+         		title: root.title;
+         		subtitle: "Advanced file manager";
+           		sections: [{
+             		items: [{
+	             		location: {
+							name: "Recent",
+							type: LocationType.recent,
+					}}, {
+	             		location: {
+							name: "Trash",
+							type: LocationType.trash,
+						},
+						badge: {
+							type: BadgeType.counter,
+							number: 139,
+					}},
+				]}, {
+              		heading: "Places",
+              		items: [{
+                		location: {
+                  			name: "arelive",
+		                	type: LocationType.directory,
+							file: {
+								name: "arelive",
+								path: "/home",
+								type: FileType.directory,
+								link: false,
+								readable: true,
+								writable: true,
+								executable: true,
+								owner: "arelive",
+								owner-id: 1000,
+								group: "arelive",
+								group-id: 1000,
+								inode: 257,
+								hard-links: 1,
+								size: 4072,
+								created: 1705560953000,
+								modified: 1777368945000,
+								accessed: 1777708781000,
+								hidden: false,
+								kind: FileKind.other,
+								format: FileFormat.other,
+								directory: { special: DirectorySpecial.home }
+							},
+                	}}, {
+                 		location: {
+                   			name: "Desktop",
+		                	type: LocationType.directory,
+							file: {
+								name: "arelive",
+								path: "/home/Desktop",
+								type: FileType.directory,
+								link: false,
+								readable: true,
+								writable: true,
+								executable: true,
+								owner: "arelive",
+								owner-id: 1000,
+								group: "arelive",
+								group-id: 1000,
+								inode: 257,
+								hard-links: 1,
+								size: 4072,
+								created: 1705560953000,
+								modified: 1777368945000,
+								accessed: 1777708781000,
+								hidden: false,
+								kind: FileKind.other,
+								format: FileFormat.other,
+								directory: { special: DirectorySpecial.desktop }
+							},
+                   	}}, {
+                  		location: {
+                    		name: "Downloads",
+		                	type: LocationType.directory,
+							file: {
+								name: "arelive",
+								path: "/home/Downloads",
+								type: FileType.directory,
+								link: false,
+								readable: true,
+								writable: true,
+								executable: true,
+								owner: "arelive",
+								owner-id: 1000,
+								group: "arelive",
+								group-id: 1000,
+								inode: 257,
+								hard-links: 1,
+								size: 4072,
+								created: 1705560953000,
+								modified: 1777368945000,
+								accessed: 1777708781000,
+								hidden: false,
+								kind: FileKind.other,
+								format: FileFormat.other,
+								directory: { special: DirectorySpecial.downloads }
+							},
+                    	},
+                     	badge: {
+							type: BadgeType.counter,
+							number: 131,
+					}}, {
+                   		location: {
+                     		name: "Documents",
+		                	type: LocationType.directory,
+							file: {
+								name: "arelive",
+								path: "/home/Documents",
+								type: FileType.directory,
+								link: false,
+								readable: true,
+								writable: true,
+								executable: true,
+								owner: "arelive",
+								owner-id: 1000,
+								group: "arelive",
+								group-id: 1000,
+								inode: 257,
+								hard-links: 1,
+								size: 4072,
+								created: 1705560953000,
+								modified: 1777368945000,
+								accessed: 1777708781000,
+								hidden: false,
+								kind: FileKind.other,
+								format: FileFormat.other,
+								directory: { special: DirectorySpecial.documents }
+							},
+                    }}, {
+                  		location: {
+                    		name: "Pictures",
+		                	type: LocationType.directory,
+							file: {
+								name: "arelive",
+								path: "/home/Pictures",
+								type: FileType.directory,
+								link: false,
+								readable: true,
+								writable: true,
+								executable: true,
+								owner: "arelive",
+								owner-id: 1000,
+								group: "arelive",
+								group-id: 1000,
+								inode: 257,
+								hard-links: 1,
+								size: 4072,
+								created: 1705560953000,
+								modified: 1777368945000,
+								accessed: 1777708781000,
+								hidden: false,
+								kind: FileKind.other,
+								format: FileFormat.other,
+								directory: { special: DirectorySpecial.pictures }
+							},
+                	}}, {
+                  		location: {
+                    		name: "Music",
+		                	type: LocationType.directory,
+							file: {
+								name: "arelive",
+								path: "/home/Music",
+								type: FileType.directory,
+								link: false,
+								readable: true,
+								writable: true,
+								executable: true,
+								owner: "arelive",
+								owner-id: 1000,
+								group: "arelive",
+								group-id: 1000,
+								inode: 257,
+								hard-links: 1,
+								size: 4072,
+								created: 1705560953000,
+								modified: 1777368945000,
+								accessed: 1777708781000,
+								hidden: false,
+								kind: FileKind.other,
+								format: FileFormat.other,
+								directory: { special: DirectorySpecial.music }
+							},
+                    }}, {
+                  		location: {
+                    		name: "Videos",
+		                	type: LocationType.directory,
+							file: {
+								name: "arelive",
+								path: "/home/Videos",
+								type: FileType.directory,
+								link: false,
+								readable: true,
+								writable: true,
+								executable: true,
+								owner: "arelive",
+								owner-id: 1000,
+								group: "arelive",
+								group-id: 1000,
+								inode: 257,
+								hard-links: 1,
+								size: 4072,
+								created: 1705560953000,
+								modified: 1777368945000,
+								accessed: 1777708781000,
+								hidden: false,
+								kind: FileKind.other,
+								format: FileFormat.other,
+								directory: { special: DirectorySpecial.videos }
+							},
+                    }}],
+                	active: 0,
+              	}, {
+               		heading: "Devices",
+             		items: [{
+	             		location: {
+							name: "Boot volume",
+		                	type: LocationType.device,
+							device: {
+								id: "nvme0n1p2",
+								type: DeviceType.ssd,
+								transport: DeviceTransport.nvme,
+								label: "BOOT",
+								size: 2143281152,
+								used: 345743360,
+								available: 1797537792,
+								vendor: "Western Digital",
+								model: "Blue SN570 500GB",
+								fs: FileSystem.btrfs,
+								mounted: true,
+								mount-point: "/boot",
+						}},
+						badge: {
+							type: BadgeType.percent,
+							number: 16,
+						},
+						hidden: true,
+               		}, {
+	             		location: {
+							name: "System",
+		                	type: LocationType.device,
+							device: {
+								id: "nvme0n1p3",
+								type: DeviceType.ssd,
+								transport: DeviceTransport.nvme,
+								label: "ROOT",
+								size: 137438953472,
+								used: 100333690880,
+								available: 34064375808,
+								vendor: "Western Digital",
+								model: "Blue SN570 500GB",
+								fs: FileSystem.btrfs,
+								os: OperatingSystem.linux,
+								mounted: true,
+								mount-point: "/",
+						}},
+						badge: {
+							type: BadgeType.percent,
+							number: 73,
+					}}, {
+	             		location: {
+							name: "Home volume",
+		                	type: LocationType.device,
+							device: {
+								id: "nvme0n1p4",
+								type: DeviceType.ssd,
+								transport: DeviceTransport.nvme,
+								label: "HOME",
+								size: 274877906944,
+								used: 208682352640,
+								available: 64080576512,
+								vendor: "Western Digital",
+								model: "Blue SN570 500GB",
+								fs: FileSystem.btrfs,
+								mounted: true,
+								mount-point: "/home",
+						}},
+						badge: {
+							type: BadgeType.percent,
+							number: 76,
+						},
+						hidden: true,
+                	}, {
+	             		location: {
+							name: "FreeBSD",
+		                	type: LocationType.device,
+							device: {
+								id: "nvme0n1p5",
+								type: DeviceType.ssd,
+								transport: DeviceTransport.nvme,
+								label: "FREEBSD",
+								size: 68462575616,
+								vendor: "Western Digital",
+								model: "Blue SN570 500GB",
+								fs: FileSystem.btrfs,
+								os: OperatingSystem.freebsd,
+					}}}, {
+	             		location: {
+							name: "Windows 10 recovery",
+		                	type: LocationType.device,
+							device: {
+								id: "nvme1n1p1",
+								type: DeviceType.ssd,
+								transport: DeviceTransport.nvme,
+								size: 523239424,
+								vendor: "Samsung",
+								model: "MZALQ512HALU-000L1",
+								fs: FileSystem.ntfs,
+								os: OperatingSystem.windows10,
+						}},
+						hidden: true,
+                  	}, {
+	             		location: {
+							name: "Windows 10 EFI",
+		                	type: LocationType.device,
+							device: {
+								id: "nvme1n1p2",
+								type: DeviceType.ssd,
+								transport: DeviceTransport.nvme,
+								size: 104857600,
+								vendor: "Samsung",
+								model: "MZALQ512HALU-000L1",
+								fs: FileSystem.fat32,
+								os: OperatingSystem.windows10,
+						}},
+						hidden: true,
+                   	}, {
+	             		location: {
+							name: "Windows 10 reserved",
+		                	type: LocationType.device,
+							device: {
+								id: "nvme1n1p3",
+								type: DeviceType.ssd,
+								transport: DeviceTransport.nvme,
+								size: 16777216,
+								vendor: "Samsung",
+								model: "MZALQ512HALU-000L1",
+								os: OperatingSystem.windows10,
+						}},
+						hidden: true,
+                    }, {
+	             		location: {
+							name: "Windows 10 C:",
+		                	type: LocationType.device,
+							device: {
+								id: "nvme1n1p4",
+								type: DeviceType.ssd,
+								transport: DeviceTransport.nvme,
+								label: "MAYFLOWER",
+								size: 511463915520,
+								used: 507781054464,
+								available: 3682856960,
+								vendor: "Samsung",
+								model: "MZALQ512HALU-000L1",
+								fs: FileSystem.bitlocker,
+								os: OperatingSystem.windows10,
+					}}}, {
+	             		location: {
+							name: "CD001",
+		                	type: LocationType.device,
+							device: {
+								id: "sr0",
+								type: DeviceType.optic,
+								format: DeviceFormat.cd-r,
+								label: "CD001",
+								size: 737280000,
+								used: 0,
+								available: 737280000,
+								fs: FileSystem.udf,
+						}},
+						badge: {
+							type: BadgeType.type,
+							string: "CD-R",
+					}}, {
+		          		location: {
+							name: "Тёмный рыцарь",
+		                	type: LocationType.device,
+							device: {
+								id: "sr1",
+								type: DeviceType.optic,
+								format: DeviceFormat.bd-rom,
+								label: "The Dark Knight",
+								size: 26843545600,
+						}},
+						badge: {
+							type: BadgeType.type,
+							string: "Blu-ray",
+						},
+	               	}, {
+	             		location: {
+							name: "FREEDOS2025",
+		                	type: LocationType.device,
+							device: {
+								id: "sda1",
+								type: DeviceType.flash,
+								transport: DeviceTransport.usb,
+								label: "FREEDOS2025",
+								size: 7999639552,
+								used: 2416312320,
+								available: 5583327232,
+								vendor: "Silicon Power",
+								model: "Helios 101 Blue",
+								fs: FileSystem.fat32,
+								mounted: true,
+								mount-point: "/media/arelive/sda1",
+						}},
+						badge: {
+							type: BadgeType.percent,
+							number: 30,
+						},
+                   	}, {
+	             		location: {
+							name: "SWITCH SD",
+		                	type: LocationType.device,
+							device: {
+								id: "sdb1",
+								type: DeviceType.flash,
+								transport: DeviceTransport.sd,
+								label: "SWITCH SD",
+								size: 246632415232,
+								used: 40632320,
+								available: 246591782912,
+								vendor: "Samsung",
+								model: "EVO Plus 256 GB",
+								fs: FileSystem.exfat,
+								mounted: true,
+								mount-point: "/media/arelive/sdb1",
+						}},
+						badge: {
+							type: BadgeType.percent,
+							number: 0,
+					}}, {
+	             		location: {
+							name: "ALPS Electric DF354H09F",
+		                	type: LocationType.device,
+							device: {
+								id: "fd0",
+								type: DeviceType.floppy,
+								format: DeviceFormat.floppy-35,
+								vendor: "ALPS Electric",
+								model: "DF354H09F",
+					}}}, {
+	             		location: {
+							name: "Mitsubishi MF501A-301UD",
+		                	type: LocationType.device,
+							device: {
+								id: "fd1",
+								type: DeviceType.floppy,
+								format: DeviceFormat.floppy-525,
+								vendor: "Mitsubishi",
+								model: "MF501A-301UD",
+					}}}, {
+	             		location: {
+							name: "Iomega Zip 750",
+		                	type: LocationType.device,
+							device: {
+								id: "sdc",
+								type: DeviceType.floppy,
+								format: DeviceFormat.zip-750,
+								vendor: "Iomega",
+								model: "Zip 750",
+					}}}, {
+	             		location: {
+							name: "HP Ultrium 448 SAS",
+		                	type: LocationType.device,
+							device: {
+								id: "st0",
+								type: DeviceType.tape,
+								transport: DeviceTransport.sas,
+								vendor: "Hewlett-Packard",
+								model: "Ultrium 448 SAS",
+					}}},
+				]}, {
+                	heading: "Network",
+                 	items: [{
+                  		location: {
+                    		name: "MacBook Pro",
+                      		type: LocationType.node,
+                        	node: {
+                         		id: "are.macbook",
+                         		type: NodeType.laptop,
+                           		size: 1000000000000,
+                             	used: 229550000000,
+                              	available: 770450000000,
+                               	online: true,
+                    }}}, {
+                  		location: {
+                    		name: "ThinkPad X1",
+                      		type: LocationType.node,
+                        	node: {
+                          		id: "are.thinkpad",
+                          		type: NodeType.laptop,
+                          		size: 1000000000000,
+                               	used: 321430000000,
+                               	available: 557001305289,
+                    }}}, {
+                        location: {
+                          	name: "Workstation",
+                            type: LocationType.node,
+                            node: {
+                               	id: "are.pc",
+                               	type: NodeType.workstation,
+                                size: 4000000000000,
+                                used: 3031200000000,
+                                available: 482525221157,
+                    }}}, {
+                  		location: {
+	                  		name: "Pixel 8 Pro",
+	                      	type: LocationType.node,
+	                       	node: {
+	                      		id: "are.pixel",
+	                      		type: NodeType.phone,
+	                          	size: 512000000000,
+	                           	used: 407200000000,
+	                           	available: 104800000000,
+	                            online: true,
+	                }}}, {
+                  		location: {
+                      		name: "Galaxy Tab S11",
+                      		type: LocationType.node,
+                           	node: {
+                          		id: "are.galaxy",
+                          		type: NodeType.tablet,
+                            	size: 256000000000,
+                               	used: 101400000000,
+                               	available: 154600000000,
+                    }}}, {
+                  		location: {
+	                    	name: "Galaxy Watch6 Classic",
+	                      	type: LocationType.node,
+	                       	node: {
+                          		id: "are.watch",
+                          		type: NodeType.watch,
+                          		size: 16384000000,
+                               	used: 2584739840,
+                               	available: 13799260160,
+                               	online: true,
+                    }}}, {
+                  		location: {
+                  			name: "DiskStation DS925+",
+                      		type: LocationType.node,
+                       		node: {
+                          		id: "are.nas",
+                          		type: NodeType.nas,
+                          		size: 48000000000000,
+                           		used: 11524320000000,
+                               	available: 36475680000000,
+                               	online: true,
+                    }}}, {
+                  		location: {
+                  			name: "Switch OLED",
+                      		type: LocationType.node,
+	                       	node: {
+	                      		id: "are.switch",
+	                      		type: NodeType.switch,
+	                        	size: 246632415232,
+                           		used: 122157035264,
+                            	available: 124475379968,
+                               	online: true,
+                    }}}, {
+                  		location: {
+                      		name: "PlayStation 5",
+                      		type: LocationType.node,
+                           	node: {
+                          		id: "are.playstation",
+                          		type: NodeType.playstation,
+                            	size: 825000000000,
+                               	used: 302775000000,
+                               	available: 522225000000,
+                    }}},
+                ]}, {
+                	heading: "Clouds",
+                 	items: [{
+                  		location: {
+                    		name: "Google Drive",
+                      		type: LocationType.cloud,
+                        	cloud: { type: CloudType.google-drive },
+                    }}, {
+                  		location: {
+                  		name: "iCloud",
+                      		type: LocationType.cloud,
+                       	cloud: { type: CloudType.icloud },
+                    }}, {
+                  		location: {
+                      		name: "Яндекс Диск",
+                      		type: LocationType.cloud,
+                           	cloud: { type: CloudType.yandex-disk },
+                    }}, {
+                  		location: {
+                  		name: "pCloud",
+                      		type: LocationType.cloud,
+                       	cloud: { type: CloudType.pcloud },
+                    }}, {
+                  		location: {
+                      		name: "S3",
+                      		type: LocationType.cloud,
+                           	cloud: { type: CloudType.s3 },
+                    }},
+                ]}];
+              	active-section: 1;
+             	summary-point: "/home";
+             	summary-fill: 76%;
+             	summary-percent: "76%";
+             	summary-size: "256 G";
+             	clicked(section, item) => root.sidebar-clicked(section, item);
+         	}
+*/
+			Rectangle {
+				for tab[tab-index] in root.tabs : Rectangle {
+					if tab-index == root.active-tab-index && tab.type == ViewType.table : TableView {
+						entries: root.entries;
+						active-entry-index: root.active-entry-index;
+						scroll-position: root.scroll-position;
+						folder-count: root.folder-count;
+						file-count: root.file-count;
+						status-text: root.status-text;
+						status-kind: root.status-kind;
+						sort-column: root.sort-column;
+						sort-direction: root.sort-direction;
+						sort(column) => root.sort-by(column);
+						click(entry, index) => root.entry-click(entry, index);
+						double-click(entry, index) => root.entry-double-click(entry, index);
+						sync(entry-index, position) => root.tab-sync(tab-index, entry-index, position);
+					}
+				}
+			}
+
+         	// Inspector {}
+        }
+    }
+}
